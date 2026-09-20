@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Bare-metal STM32F103C8T6 temperature monitoring project (Blue Pill board). Uses STM32CubeMX-generated HAL code with a cooperative-scheduler architecture. Supports DS18B20, AHT20 (temp+humidity), and ENS160 (air quality) sensors on a shared I2C1 bus, with OLED display and serial logging.
+Bare-metal STM32F103C8T6 temperature monitoring project (Blue Pill board). Uses STM32CubeMX-generated HAL code with a cooperative-scheduler architecture. Supports DS18B20, AHT20 (temp+humidity), and ENS160 (air quality) sensors on a shared I2C1 bus, with OLED display, LED heartbeat, and serial logging.
 
 **⚠️ Important workflow**: After editing `.ioc` in STM32CubeMX and regenerating code, **all USER CODE blocks in `main.c` will be preserved**, but CubeMX may overwrite other HAL files. Always run `git status` after regeneration. The application code (all `Core/Src/*.c` files except `main.c`, `stm32f1xx_hal_msp.c`, `stm32f1xx_it.c`) lives in user files and is not touched by CubeMX regeneration.
 
@@ -19,14 +19,14 @@ Bare-metal STM32F103C8T6 temperature monitoring project (Blue Pill board). Uses 
 
 | Peripheral | Pin/Config |
 |---|---|
-| LED | PC13, GPIO_Output (on=low) |
+| LED (heartbeat) | PC13, GPIO_Output, toggles every 500ms |
 | Button (KEY) | PA0, GPIO_Input, Pull-down, press=high |
 | DS18B20 (temp) | PA1, GPIO_Output Open-Drain (one-wire) |
 | UART1 (log) | USART1, 115200, PA9/PA10 |
 | UART3 (aux) | USART3, 115200, PB10/PB11 |
 | Buzzer PWM | TIM3 CH1, PA6, 2kHz, 50% duty |
 | OLED display | I2C1, PB6=SCL, PB7=SDA, 100kHz, SSD1306 128x64 (0x78) |
-| AHT20 (temp+hum) | I2C1, PB6/PB7, 100kHz (0x38) |
+| AHT20 (temp+humidity) | I2C1, PB6/PB7, 100kHz (0x38) |
 | ENS160 (air quality) | I2C1, PB6/PB7, 100kHz (0x53) |
 | Clock | HSE 8MHz → PLL ×9 → 72MHz SYSCLK, APB1=36MHz, APB2=72MHz |
 
@@ -39,8 +39,10 @@ Periodic task scheduler using `HAL_GetTick()` timestamps — no blocking delays:
 ```
 while(1) → Scheduler_Run() → checks task table
     ├── 10ms:  Key scan → Menu event
-    ├── 100ms: Display refresh, Sensor read (DS18B20+AHT20+ENS160)
+    ├── 100ms: Display refresh
+    ├── 100ms: Sensor read (DS18B20+AHT20+ENS160)
     ├── 100ms: Alarm check + buzzer
+    ├── 500ms: LED heartbeat toggle (PC13)
     ├── 1000ms: Sensor trigger (DS18B20 conv + ENS160)
     └── 2000ms: UART log report
 ```
@@ -49,7 +51,7 @@ while(1) → Scheduler_Run() → checks task table
 
 | File | Purpose |
 |---|---|
-| `Core/Src/scheduler.c` | Task table runner |
+| `Core/Src/scheduler.c` | Task table runner (`TASK_COUNT = 7`) |
 | `Core/Src/key.c` | Button state machine (RELEASED→DEBOUNCE→PRESSED) |
 | `Core/Src/sensor.c` | Unified sensor API — aggregates all 3 sensors, non-blocking |
 | `Core/Src/ds18b20.c` | One-wire bit-banging driver |
@@ -60,17 +62,17 @@ while(1) → Scheduler_Run() → checks task table
 | `Core/Src/ssd1306.c` | Minimal SSD1306 I2C driver |
 | `Core/Src/ssd1306_font.c` | 6×8 bitmap font (ASCII 0x20–0x7F) |
 | `Core/Src/log.c` | `printf` redirect to UART1 (PA9) + periodic report |
-| `Core/Src/main.c` | HAL init (USER CODE blocks), task table, scheduler loop |
+| `Core/Src/main.c` | HAL init, task table (7 tasks), scheduler loop |
 
 ## Sensor Data (sensor_data_t)
 
 ```c
 typedef struct {
-    float  temp;        // °C  (from AHT20 or DS18B20)
-    float  humidity;     // %RH (from AHT20)
-    uint16_t tvoc;     // ppb  (from ENS160)
-    uint16_t eco2;     // ppm  (from ENS160)
-    uint8_t  aqil;     // AQI  (from ENS160)
+    float  temp;        // °C  (AHT20 primary, DS18B20 fallback)
+    float  humidity;     // %RH (AHT20)
+    uint16_t tvoc;     // ppb  (ENS160)
+    uint16_t eco2;     // ppm  (ENS160)
+    uint8_t  aqil;     // AQI  (ENS160, 0–500)
     uint8_t  ds18b20_valid;
     uint8_t  aht20_valid;
     uint8_t  ens160_valid;
@@ -102,7 +104,7 @@ typedef struct {
 Core/
   Inc/
     main.h              ← externs for hi2c1, huart1, huart3, htim3
-    scheduler.h         ← task_t, TASK_COUNT, Scheduler_Run()
+    scheduler.h         ← task_t, TASK_COUNT (7), Scheduler_Run()
     key.h              ← key_t, key_evt_t, Key_*()
     sensor.h           ← sensor_data_t, Sensor_*()
     alarm.h            ← Alarm_*()
