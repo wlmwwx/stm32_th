@@ -18,5 +18,5 @@ void Log_Init(void)
 void Log_TaskReport(void)
 {
     printf("T:%.1f,HI:%.1f,LO:%.1f,ALM:%d\r\n",
-           Sensor_GetTemp(), Alarm_GetHiTh(), Alarm_GetLoTh(), Alarm_IsActive());
+           Sensor_GetData().temp, Alarm_GetHiTh(), Alarm_GetLoTh(), Alarm_IsActive());
 }

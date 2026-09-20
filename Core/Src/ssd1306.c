@@ -13,8 +13,6 @@ static uint8_t s_buffer[SSD1306_WIDTH * SSD1306_HEIGHT / 8];
 
 static void SSD1306_WriteCmd(uint8_t cmd);
 static void SSD1306_WriteData(const uint8_t *data, uint16_t len);
-static void SSD1306_SetPage(uint8_t page);
-static void SSD1306_SetColumn(uint8_t col);
 
 void SSD1306_Init(void)
 {
@@ -50,8 +48,7 @@ void SSD1306_Update(void)
         SSD1306_WriteCmd(0xB0 + page);
         SSD1306_WriteCmd(0x02);  // column low
         SSD1306_WriteCmd(0x10);  // column high
-        uint8_t col = 0;
-        SSD1306_WriteData(&s_buffer[page * SSD1306_WIDTH], SSD1306_WIDTH);
+            SSD1306_WriteData(&s_buffer[page * SSD1306_WIDTH], SSD1306_WIDTH);
     }
 }
 
@@ -98,8 +95,6 @@ static void SSD1306_WriteCmd(uint8_t cmd)
 
 static void SSD1306_WriteData(const uint8_t *data, uint16_t len)
 {
-    uint8_t *buf = (uint8_t *)data;
-    // prepend register address byte
     uint8_t tmp[128 + 1];
     tmp[0] = 0x40;
     for (uint16_t i = 0; i < len && i < 128; i++) tmp[i + 1] = data[i];

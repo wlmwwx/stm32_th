@@ -27,6 +27,8 @@
 #include "alarm.h"
 #include "display.h"
 #include "log.h"
+#include "aht20.h"
+#include "ens160.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -71,17 +73,17 @@ static void MX_I2C1_Init(void);
 /* Task functions */
 void Task_KeyScan(void)  { Key_Scan10ms(&g_key);  Menu_OnKey(Key_GetEvent(&g_key)); }
 void Task_Display(void)  { Display_Refresh(); }
-void Task_StartConv(void){ Sensor_TaskStartConvert(); }
-void Task_ReadTemp(void) { Sensor_TaskReadResult(); }
-void Task_Alarm(void)    { Alarm_Task100ms(); Alarm_BuzzerTask100ms(); }
-void Task_Log(void)      { Log_TaskReport(); }
+void Task_Sensor(void)     { Sensor_TaskReadResult(); }
+void Task_SensorStart(void) { Sensor_TaskStartConvert(); }
+void Task_Alarm(void)      { Alarm_Task100ms(); Alarm_BuzzerTask100ms(); }
+void Task_Log(void)        { Log_TaskReport(); }
 
 task_t s_tasks[] = {
-    { 0,   10,  Task_KeyScan    },
-    { 0,   100, Task_Display   },
-    { 0,   1000,Task_StartConv },
-    { 0,   100, Task_ReadTemp  },
-    { 0,   100, Task_Alarm     },
+    { 0,   10,  Task_KeyScan     },
+    { 0,   100, Task_Display    },
+    { 0,   100, Task_Sensor     },
+    { 0,   1000,Task_SensorStart },
+    { 0,   100, Task_Alarm      },
     { 0,   2000,Task_Log       },
 };
 /* USER CODE END 0 */

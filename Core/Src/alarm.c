@@ -35,7 +35,7 @@ uint8_t Alarm_IsActive(void) { return s_alarm; }
 
 void Alarm_Task100ms(void)
 {
-    float t = Sensor_GetTemp();
+    float t = Sensor_GetData().temp;
     if (!s_alarm && t >= s_th_hi) {
         s_alarm = 1;
     } else if (s_alarm && t <= s_th_hi - HYSTERESIS) {
