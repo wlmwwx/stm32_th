@@ -55,7 +55,7 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-key_t g_key;
+key_t g_keys[KEY_COUNT];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -71,8 +71,20 @@ static void MX_I2C1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 /* Task functions */
-void Task_KeyScan(void)  { Key_Scan10ms(&g_key);  Menu_OnKey(Key_GetEvent(&g_key)); }
-void Task_Display(void)  { Display_Refresh(); }
+void Task_KeyScan(void)
+{
+    for (key_id_t i = 0; i < KEY_COUNT; i++) {
+        Key_Scan10ms(&g_keys[i]);
+        key_evt_t evt = Key_GetEvent(&g_keys[i]);
+        if (evt != KEY_EVT_NONE) Menu_OnKey(i, evt);
+    }
+}
+void Task_Display(void)
+{
+    sensor_data_t s = Sensor_GetData();
+    Display_UpdateHistory(&s);
+    Display_Refresh();
+}
 void Task_LED(void)        { HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13); }
 void Task_Sensor(void)     { Sensor_TaskReadResult(); }
 void Task_SensorStart(void) { Sensor_TaskStartConvert(); }
@@ -130,7 +142,9 @@ int main(void)
   Sensor_Init();
   Alarm_Init();
   Display_Init();
-  Key_Init(&g_key, KEY_GPIO_Port, KEY_Pin, GPIO_PIN_SET);
+  Key_Init(&g_keys[KEY_ID_K1], KEY_GPIO_Port, KEY_Pin,  GPIO_PIN_SET);
+  Key_Init(&g_keys[KEY_ID_K2], K2_GPIO_Port, K2_Pin,  GPIO_PIN_SET);
+  Key_Init(&g_keys[KEY_ID_K3], K3_GPIO_Port, K3_Pin,  GPIO_PIN_SET);
   Log_Init();
   /* USER CODE END 2 */
 
@@ -365,10 +379,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  /*Configure GPIO pins : PA0=K1, PA2=K2, PA3=K3 */
+  GPIO_InitStruct.Pin = KEY_Pin | K2_Pin | K3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : ds18b20_Pin */

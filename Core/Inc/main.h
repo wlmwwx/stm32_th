@@ -66,8 +66,14 @@ void MX_USART3_UART_Init(void);
 /* Private defines -----------------------------------------------------------*/
 #define LED_Pin GPIO_PIN_13
 #define LED_GPIO_Port GPIOC
+#define K1_Pin GPIO_PIN_0
+#define K1_GPIO_Port GPIOA
 #define ds18b20_Pin GPIO_PIN_1
 #define ds18b20_GPIO_Port GPIOA
+#define K2_Pin GPIO_PIN_2
+#define K2_GPIO_Port GPIOA
+#define K3_Pin GPIO_PIN_3
+#define K3_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

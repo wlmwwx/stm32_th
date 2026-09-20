@@ -82,9 +82,23 @@ Cooperative scheduler — no RTOS, no blocking delays:
 
 Each sensor uses **trigger → wait → read** to avoid blocking. Sensor state is stored in `sensor.c` and queried by display/log/alarm modules independently.
 
-## Button
+## Button UI
 
-- **Short press** — cycle through pages: MAIN → HI → LO
-- **Long press** — enter edit mode (on HI/LO page)
-- **Short press (edit)** — ±0.5°C
-- **Long press (edit)** — save and exit
+Three buttons control the display:
+
+| Button | Pin | Action |
+|--------|-----|--------|
+| K1 | PA0 | Short: none / Long: enter alarm edit |
+| K2 | PA2 | Short: previous page |
+| K3 | PA3 | Short: next page |
+
+**Pages:** REAL-TIME → ENS160 HISTORY → AHT20 HISTORY → (loop)
+
+- **Page 1 (REAL-TIME):** Live temperature, humidity, TVOC, eCO₂, AQI
+- **Page 2 (ENS160):** Bar chart of eCO₂ and TVOC history (20 samples)
+- **Page 3 (AHT20):** Bar chart of temperature and humidity history (20 samples)
+
+**Alarm edit (K1 long-press on page 1):**
+- K2 short: raise upper threshold +0.5°C
+- K3 short: lower lower threshold −0.5°C
+- K1 short: save and exit

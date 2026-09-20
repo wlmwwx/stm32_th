@@ -1,7 +1,9 @@
 #include "key.h"
 
 #define DEBOUNCE_MS   20
-#define LONG_PRESS_MS 1000
+#define LONG_PRESS_MS  1000
+
+extern key_t g_keys[KEY_COUNT];
 
 void Key_Init(key_t *k, GPIO_TypeDef *port, uint16_t pin, GPIO_PinState press_level)
 {
@@ -61,7 +63,16 @@ key_evt_t Key_GetEvent(key_t *k)
     return e;
 }
 
-uint8_t Key_IsPressed(const key_t *k)
+uint8_t Key_IsPressed(key_id_t id)
 {
-    return k->state == KS_PRESSED;
+    if (id >= KEY_COUNT) return 0;
+    return g_keys[id].state == KS_PRESSED;
+}
+
+uint8_t Key_IsPressedAny(void)
+{
+    for (key_id_t i = 0; i < KEY_COUNT; i++) {
+        if (g_keys[i].state == KS_PRESSED) return 1;
+    }
+    return 0;
 }
