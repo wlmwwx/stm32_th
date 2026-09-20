@@ -31,15 +31,12 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* USER CODE BEGIN ExternVariables */
 extern I2C_HandleTypeDef hi2c1;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart3;
 extern TIM_HandleTypeDef htim3;
-/* USER CODE END ExternVariables */
+
+/* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
@@ -76,7 +73,6 @@ void MX_USART3_UART_Init(void);
 #define KEY_Pin       GPIO_PIN_0
 #define KEY_GPIO_Port  GPIOA
 /* USER CODE END Private defines */
-
 
 #ifdef __cplusplus
 }
