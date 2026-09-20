@@ -73,6 +73,7 @@ static void MX_I2C1_Init(void);
 /* Task functions */
 void Task_KeyScan(void)  { Key_Scan10ms(&g_key);  Menu_OnKey(Key_GetEvent(&g_key)); }
 void Task_Display(void)  { Display_Refresh(); }
+void Task_LED(void)        { HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13); }
 void Task_Sensor(void)     { Sensor_TaskReadResult(); }
 void Task_SensorStart(void) { Sensor_TaskStartConvert(); }
 void Task_Alarm(void)      { Alarm_Task100ms(); Alarm_BuzzerTask100ms(); }
@@ -84,6 +85,7 @@ task_t s_tasks[] = {
     { 0,   100, Task_Sensor     },
     { 0,   1000,Task_SensorStart },
     { 0,   100, Task_Alarm      },
+    { 0,   500, Task_LED       },
     { 0,   2000,Task_Log       },
 };
 /* USER CODE END 0 */
@@ -351,7 +353,17 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(ds18b20_GPIO_Port, ds18b20_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : LED_Pin */
+  GPIO_InitStruct.Pin = LED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PA0 */
   GPIO_InitStruct.Pin = GPIO_PIN_0;

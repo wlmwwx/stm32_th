@@ -8,7 +8,7 @@ typedef struct {
     void (*func)(void);
 } task_t;
 
-#define TASK_COUNT 6
+#define TASK_COUNT 7
 
 extern task_t s_tasks[];
 

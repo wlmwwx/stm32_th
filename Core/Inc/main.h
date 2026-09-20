@@ -64,6 +64,8 @@ void MX_USART3_UART_Init(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define LED_Pin GPIO_PIN_13
+#define LED_GPIO_Port GPIOC
 #define ds18b20_Pin GPIO_PIN_1
 #define ds18b20_GPIO_Port GPIOA
 
