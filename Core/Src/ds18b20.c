@@ -18,6 +18,7 @@ static void DQ_WriteByte(uint8_t byte);
 static uint8_t DQ_ReadByte(void);
 static void DQ_EnterCritical(void);
 static void DQ_ExitCritical(void);
+static void delay_us(uint32_t us);
 
 static uint8_t s_irq_enabled;
 

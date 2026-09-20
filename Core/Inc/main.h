@@ -34,6 +34,13 @@ extern "C" {
 
 /* USER CODE END Includes */
 
+/* USER CODE BEGIN ExternVariables */
+extern I2C_HandleTypeDef hi2c1;
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart3;
+extern TIM_HandleTypeDef htim3;
+/* USER CODE END ExternVariables */
+
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
@@ -44,13 +51,6 @@ extern "C" {
 
 /* USER CODE END EC */
 
-/* Exported variables (defined in main.c) -----------------------------------*/
-extern I2C_HandleTypeDef hi2c1;
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart3;
-extern TIM_HandleTypeDef htim3;
-
-
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 
@@ -60,6 +60,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+void MX_USART3_UART_Init(void);
 
 /* USER CODE BEGIN EFP */
 
@@ -68,12 +69,14 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define ds18b20_Pin GPIO_PIN_1
 #define ds18b20_GPIO_Port GPIOA
-#define KEY_Pin       GPIO_PIN_0
-#define KEY_GPIO_Port  GPIOA
 
 /* USER CODE BEGIN Private defines */
 
+/* USER CODE BEGIN Private defines */
+#define KEY_Pin       GPIO_PIN_0
+#define KEY_GPIO_Port  GPIOA
 /* USER CODE END Private defines */
+
 
 #ifdef __cplusplus
 }

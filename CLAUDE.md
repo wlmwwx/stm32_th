@@ -4,14 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Bare-metal STM32F103C8T6 temperature monitoring project (Blue Pill board). Uses STM32CubeMX-generated HAL code with a cooperative-scheduler architecture. The application logic is implemented as described in `docs/reference.md`.
+Bare-metal STM32F103C8T6 temperature monitoring project (Blue Pill board). Uses STM32CubeMX-generated HAL code with a cooperative-scheduler architecture.
+
+**⚠️ Important workflow**: After editing `.ioc` in STM32CubeMX and regenerating code, **all USER CODE blocks in `main.c` will be preserved**, but CubeMX may overwrite other HAL files. Always run `git status` after regeneration to check for unexpected changes. The application code (all `Core/Src/*.c` files except `main.c`, `stm32f1xx_hal_msp.c`, `stm32f1xx_it.c`) lives in user files and is not touched by CubeMX regeneration.
 
 ## Build
 
-- **IDE**: STM32CubeIDE (or arm-none-eabi-gcc + Make)
-- **IOC**: `stm32_th.ioc` — open in STM32CubeMX to regenerate HAL code after changes
+- **IDE**: STM32CubeIDE
+- **IOC**: `stm32_th.ioc` — open in STM32CubeMX to regenerate HAL code
 - **Linker script**: `STM32F103C8TX_FLASH.ld`
-- **Float printf**: linker flag `-u _printf_float` is set in `.cproject` (required for `printf("%.1f")`)
+- **Float printf**: linker flag `-u _printf_float` set in `.cproject` (required for `printf("%.1f")`)
 
 ## Hardware Configuration
 
@@ -51,7 +53,7 @@ while(1) → Scheduler_Run() → checks task table
 | `Core/Src/ssd1306.c` | Minimal SSD1306 I2C driver |
 | `Core/Src/ssd1306_font.c` | 6×8 bitmap font (ASCII 0x20–0x7F) |
 | `Core/Src/log.c` | `printf` redirect to UART1 + periodic report |
-| `Core/Src/main.c` | Clock init, GPIO init, task table, scheduler loop |
+| `Core/Src/main.c` | HAL init (USER CODE blocks), task table, scheduler loop |
 
 ## Key Design Patterns
 
@@ -68,7 +70,8 @@ while(1) → Scheduler_Run() → checks task table
 2. **`printf("%.1f")` shows blank**: missing `-u _printf_float` in linker flags — already set in `.cproject`.
 3. **ISRs calling blocking functions**: `HAL_Delay()` and `printf()` must never be called from ISR context.
 4. **Alarm chattering**: missing hysteresis — `alarm.c` uses separate on/off thresholds.
-5. **Button press direction**: IOC has PA0 Pull-down (press=high). If button is active-low on your board, change to Pull-up and pass `GPIO_PIN_RESET` to `Key_Init()`.
+5. **Button press direction**: PA0 is Pull-down (press=high). If button is active-low on your board, change to Pull-up and pass `GPIO_PIN_RESET` to `Key_Init()`.
+6. **CubeMX regeneration removes I2C driver**: if `Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c` is missing after regeneration, run: `git checkout HEAD -- Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_i2c.h`
 
 ## File Structure
 
@@ -85,15 +88,15 @@ Core/
     ds18b20.h          ← DS18B20_*()
     ssd1306.h / ssd1306_font.h
   Src/
-    main.c             ← application entry, task table, init functions
+    main.c             ← application entry, task table, init functions (USER CODE blocks)
     scheduler.c / key.c / sensor.c / alarm.c / display.c
     menu.c / log.c / ds18b20.c
     ssd1306.c / ssd1306_font.c
     stm32f1xx_hal_msp.c / stm32f1xx_it.c / system_stm32f1xx.c
 Drivers/
   CMSIS/               ← ARM Cortex-M core headers
-  STM32F1xx_HAL_Driver/ ← HAL source
+  STM32F1xx_HAL_Driver/ ← HAL source (I2C driver may need restore after CubeMX regen)
 docs/
-  reference.md         ← design guide (read this first)
+  reference.md         ← design guide
 stm32_th.ioc          ← CubeMX config (regenerates HAL)
 ```

@@ -8,7 +8,7 @@ typedef struct {
     void (*func)(void);
 } task_t;
 
-#define TASK_COUNT (sizeof(s_tasks)/sizeof(s_tasks[0]))
+#define TASK_COUNT 6
 
 extern task_t s_tasks[];
 
